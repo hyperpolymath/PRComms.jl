@@ -1,0 +1,27 @@
+name = "PRComms"
+uuid = "2dde2a48-bffb-456d-9be4-0a16c25066d3"
+authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
+version = "0.1.0"
+license = "MPL-2.0"
+
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
+Mustache = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Luxor = "ae8d54c2-7ccd-5906-9d76-62fc9837b5bc"
+
+[compat]
+julia = "1.10"
+DataFrames = "1"
+JSON3 = "1"
+SQLite = "1"
+Mustache = "1"
+Luxor = "3, 4"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
