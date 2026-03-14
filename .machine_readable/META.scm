@@ -1,4 +1,5 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
+;; (PMPL-1.0-or-later preferred; MPL-2.0 required for Julia ecosystem)
 ;; META.scm for PRComms.jl
 
 (define meta
@@ -6,7 +7,7 @@
      (name . "PRComms.jl")
      (tagline . "Strategic public relations and communications operations framework")
      (category . "communications")
-     (license . "PMPL-1.0-or-later")
+     (license . "MPL-2.0")
      (inception-date . "2026")
      (repository . "https://github.com/hyperpolymath/PRComms.jl"))
     (development-practices
