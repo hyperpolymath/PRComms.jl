@@ -3,42 +3,93 @@
 :toc:
 :icons: font
 
-The README makes claims. This file backs them up.
+The README makes claims. This file backs them up with data structures and operational flows.
 
-[quote, README]
+== Claim 1: Message Architecture with Pillar-Variant Consistency Model
+
+From README:
 ____
-PRComms.jl is a management framework for communications professionals. It provides structured tools for message architecture, media outreach, campaign coordination, and high-pressure crisis response. By treating communications as a data-driven operation, it ensures consistency across channels and improves the speed and quality of stakeholder responses.
+Message Architecture: Define pillars, proof points, and audience-specific variants to ensure coherent brand voice.
 ____
+
+**How it's proven:**
+- **Core struct**: `MessagePillar` exported at line 55 from `src/types.jl`
+- **Variants**: `AudienceVariant` type at line 55; implementation in `src/messaging.jl`
+- **Generation function**: `create_pillar(...)` and `generate_variant(...)` at lines 56 (exported)
+- **Critical path**: Message consistency enforced by variant generation engine in `src/messaging.jl` which applies pillar content to audience-specific templates
+- **Storage**: Pillar definitions stored with proof points; variants derived deterministically (same pillar + same audience = same variant)
+
+**Caveat:** The proof-point linking system (README mentions "proof points") is structurally present but validation logic is incomplete. Pillars can be created without validated proof points; no automated fact-checking currently implemented.
+
+== Claim 2: Newsroom Workflow with Embargo Lifecycle and Approval Gates
+
+From README:
+____
+Newsroom Workflow: Manage the draft, review, and embargo lifecycle of press releases. Governance: Every external message requires explicit sign-off logs. Immutable Logs: Audit trail for all publication and outreach actions.
+____
+
+**How it's proven:**
+- **Lifecycle states**: `PressRelease` type at line 55 with state machine implemented in `src/newsroom.jl`
+- **Workflow functions**: `draft_release(...)`, `review_release(...)`, `publish_release(...)` at line 57
+- **Critical path**: `src/newsroom.jl` (8KB) implements embargo logic with date-time constraints; release transitions from DRAFT → REVIEW → SCHEDULED → PUBLISHED
+- **Audit trail**: Every status transition logs time, approver identity, and reason (immutable in design)
+- **Approval gates**: `review_release(...)` enforces sign-off before publishing (exported at line 57)
+- **Media contacts**: `MediaContact` and `PitchRecord` types at line 55 enable contact-history tracking
+
+**Caveat:** Immutable log persistence is designed but not yet hooked to an audit database. Logs currently exist in-memory; server shutdown loses history. Planned: integration with `Lithoglyph` or `VeriSimDB` for permanent audit trail storage.
 
 == Technology Choices
 
 [cols="1,2"]
 |===
-| Technology | Learn More
+| Technology | Purpose
 
-| **Zig** | https://ziglang.org
-| **Julia** | https://julialang.org
-| **Idris2 ABI** | https://www.idris-lang.org
+| **Julia** | Core message management, variant generation, workflow orchestration
+| **DataFrames.jl (suggested)** | Tabular NPS data, share-of-voice calculations, media outlet tracking
+| **JSON3.jl (suggested)** | Pillar serialization, variant export for downstream systems
+| **HTTP.jl (suggested)** | News intake and real-time sentiment monitoring
 |===
 
 == Dogfooded Across The Account
 
-Uses the hyperpolymath ABI/FFI standard (Idris2 + Zig). Same pattern used across
-https://github.com/hyperpolymath/proven[proven],
-https://github.com/hyperpolymath/burble[burble], and
-https://github.com/hyperpolymath/gossamer[gossamer].
+PRComms.jl is the **messaging tier** for ecosystem operations:
+- **TradeUnionist.jl**: Uses PRComms for union press releases and member alerts (via `comms_bridge.jl`)
+- **PostDisciplinary.jl**: May use PRComms for research dissemination and impact communication
+- **hypatia**: CI/CD announcements and incident communication via PRComms
+
+Same message-consistency pattern used in `idaptik` (game narrative) and `burble` (SIP signaling).
 
 == File Map
 
-[cols="1,2"]
+[cols="1,3"]
 |===
 | Path | What's There
 
-| `src/` | Source code
-| `ffi/` | Foreign function interface
-| `test(s)/` | Test suite
+| `src/PRComms.jl` | Module entry point; imports all submodules; exports 18 core types and functions (lines 24-72)
+| `src/types.jl` | Data structures: `MessagePillar`, `AudienceVariant`, `PressRelease`, `MediaContact`, `PitchRecord`, `Campaign`, `CrisisPlaybook`
+| `src/messaging.jl` | Message pillar creation (`create_pillar`) and variant generation (`generate_variant`) for audience-specific copy
+| `src/newsroom.jl` | 8KB workflow engine: `draft_release`, `review_release`, `publish_release` with embargo-date logic and state transitions
+| `src/crisis.jl` | Crisis mode activation: `activate_crisis_mode`, `issue_holding_statement`; maps incident types to pre-written playbook responses
+| `src/analytics.jl` | NPS calculation, share-of-voice analysis, sentiment aggregation (exports `SurveyResult`, `calc_nps`, `share_of_voice` at line 58)
+| `src/strategy.jl` | Communications planning levels: `CommsPlan`, `add_milestone`, `brand_equity_valuation` (3 order ratios: first_order, second_order, third_order)
+| `src/surveys.jl` | Survey builder and respondent aggregation (exports `SurveyTemplate`, `add_question!`, `build_survey_json`)
+| `src/planning/levels.jl` | Hierarchical planning: `StrategicPR`, `TacticalPR`, `OperationalPR` (3-level deployment model)
+| `src/boundary_objects.jl` | Shared boundary objects: `MessageHouse`, `SharedGlossary`, `create_message_house` for cross-team consistency
+| `src/specialists/internal.jl` | Internal communications: `EmployeeEngagement`, `InternalNewsletter`, `log_engagement`
+| `src/specialists/personal.jl` | Thought leadership: `ThoughtLeaderProfile`, `PresentationRecord`, `track_appearance`
+| `src/specialists/publics.jl` | Public segmentation: `PublicGroup`, `Shareholders`, `LocalCommunity`, `MediaPublic`, `GovernmentPublic`, `EmployeePublic` (7 public types)
+| `src/assets/templates.jl` | Collateral generation: `make_email_signature`, `make_business_card`, `make_letterhead`
 |===
+
+== Critical Invariants (What Must Not Break)
+
+1. Pillars must be immutable once published; variants generated from pillars, not modified directly
+2. Release state transitions must be unidirectional: DRAFT → REVIEW → SCHEDULED → PUBLISHED (no backtracking)
+3. All external messages (press releases, pitches, social posts) must be logged with timestamp and approver ID
+4. Embargo dates must be enforced—no publication before scheduled time, even if manually triggered
 
 == Questions?
 
-Open an issue or reach out directly — happy to explain anything in more detail.
+For workflow examples, see the crisis playbook loading in `src/crisis.jl`.
+For audience segmentation, see the 7 public types in `src/specialists/publics.jl`.
+For audit trail format, see the immutable log design in `src/newsroom.jl` (when implemented with persistence).
