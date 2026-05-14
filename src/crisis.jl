@@ -16,7 +16,7 @@ end
 
 function issue_holding_statement(playbook::CrisisPlaybook, variant_idx::Int)
     statement = playbook.holding_statements[variant_idx]
-    return "STMT: "$statement""
+    return "STMT: \"$statement\""
 end
 
 end # module
