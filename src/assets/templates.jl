@@ -20,7 +20,12 @@ function make_email_signature(name, role, email, phone)
         Phone: {{phone}}
     </div>
     """
-    return render(template, name=name, role=role, email=email, phone=phone)
+    return render(template, Dict(
+        "name"  => name,
+        "role"  => role,
+        "email" => email,
+        "phone" => phone,
+    ))
 end
 
 """

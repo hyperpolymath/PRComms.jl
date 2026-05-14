@@ -47,7 +47,9 @@ using PRComms
     @testset "Invariant: draft_release always starts as draft" begin
         for _ in 1:50
             id = Symbol("pr$(rand(1:99999))")
-            pr = draft_release(id, "Title $(rand(1:99999))", "Body text")
+            pr = draft_release(id, "Title $(rand(1:99999))",
+                "Property-based test body that exceeds the fifty-character " *
+                "minimum length required by draft_release().")
             @test pr.status == :draft
             @test pr.embargo_at === nothing
         end

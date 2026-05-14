@@ -18,7 +18,9 @@ using Dates
         @test variant isa AudienceVariant
         @test variant.pillar_id == :camp_p
 
-        pr = draft_release(:camp_pr, "Big Launch Today", "We launch our product.")
+        pr = draft_release(:camp_pr, "Big Launch Today",
+            "We launch our product today with full availability across all " *
+            "supported regions starting at 09:00 UTC.")
         review_release(pr)
         @test pr.status == :review
 
