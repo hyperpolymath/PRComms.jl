@@ -151,19 +151,22 @@ using DataFrames
     # Newsroom
     # -----------------------------------------------------------------------
     @testset "Newsroom" begin
+        sample_body = "We are excited to announce our launch with " *
+                      "comprehensive details for press and partners."
+
         @testset "draft_release" begin
-            pr = draft_release(:nr1, "Launch Day", "We are excited to announce...")
+            pr = draft_release(:nr1, "Launch Day", sample_body)
             @test pr isa PressRelease
             @test pr.id == :nr1
             @test pr.title == "Launch Day"
-            @test pr.body == "We are excited to announce..."
+            @test pr.body == sample_body
             @test pr.status == :draft
             @test pr.embargo_at === nothing
             @test pr.approved_at === nothing
         end
 
         @testset "review_release" begin
-            pr = draft_release(:nr2, "Review Test", "Body")
+            pr = draft_release(:nr2, "Review Test", sample_body)
             result = review_release(pr)
             @test result isa String
             @test pr.status == :review
@@ -171,7 +174,7 @@ using DataFrames
         end
 
         @testset "publish_release without embargo" begin
-            pr = draft_release(:nr3, "Publish Test", "Body")
+            pr = draft_release(:nr3, "Publish Test", sample_body)
             result = publish_release(pr)
             @test result isa String
             @test pr.status == :published
@@ -179,7 +182,7 @@ using DataFrames
         end
 
         @testset "publish_release with embargo" begin
-            pr = draft_release(:nr4, "Embargo Test", "Body")
+            pr = draft_release(:nr4, "Embargo Test", sample_body)
             embargo_time = DateTime(2026, 6, 1, 9, 0)
             result = publish_release(pr; embargo=embargo_time)
             @test result isa String
@@ -278,7 +281,7 @@ using DataFrames
         end
 
         @testset "third_order_ratio" begin
-            @test third_order_ratio(0.8, 0.6, 2.0) == 0.1
+            @test third_order_ratio(0.8, 0.6, 2.0) ≈ 0.1
             @test third_order_ratio(0.5, 0.5, 0) == 0.0  # divide by zero guard
         end
     end
