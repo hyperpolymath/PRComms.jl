@@ -183,7 +183,9 @@ using DataFrames
 
         @testset "publish_release with embargo" begin
             pr = draft_release(:nr4, "Embargo Test", sample_body)
-            embargo_time = DateTime(2026, 6, 1, 9, 0)
+            # Keep the fixture valid as time advances; `publish_release`
+            # intentionally rejects embargoes that are not in the future.
+            embargo_time = DateTime(now()) + Day(30)
             result = publish_release(pr; embargo=embargo_time)
             @test result isa String
             @test pr.status == :embargoed
