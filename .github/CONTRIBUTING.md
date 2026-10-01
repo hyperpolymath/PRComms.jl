@@ -124,3 +124,23 @@ Footer: issue reference, e.g. Closes #123
 \[optional body\]
 
 \[optional footer\]
+
+### Signed commits
+
+Estate policy requires every commit that reaches the default branch to be signed.
+Repositories with an active signed-commit ruleset reject unsigned pushes to
+covered branches. See:
+[SIGNING-POLICY](https://github.com/hyperpolymath/standards/blob/main/docs/SIGNING-POLICY.adoc).
+
+- **People and interactive agents** sign with an SSH key registered on GitHub
+  as a *signing* key (`gpg.format=ssh`, `user.signingkey=<key>.pub`,
+  `commit.gpgsign=true`). The committer email must be verified on that account.
+- **Apps, bots and workflows** never `git push` local commits. They write
+  through the API (`createCommitOnBranch` or the estate `signed-push` action)
+  so that GitHub signs each commit.
+- Merge PRs with **squash**, as required in repositories configured as squash-only.
+  Where the applicable ruleset checks every commit on the PR branch, not just the
+  result, one unsigned commit blocks the merge. In those repositories, re-create
+  such a branch with signed commits (`git cherry-pick -S`) and open a new PR.
+  Rebase-merge replays commits unsigned; repositories configured to enforce the
+  estate's signing or squash-only policy disable it in their merge settings.
